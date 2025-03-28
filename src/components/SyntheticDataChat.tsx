@@ -28,6 +28,17 @@ export default function SyntheticDataChat() {
         setHasStartedChat(true);
     };
 
+    const handleUploadClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+        console.log('Upload button clicked');
+        e.preventDefault();
+
+        if (isLoading) return;
+
+        sendPrompt("epic-generation");
+        setPrompt('');
+        setHasStartedChat(true);
+    };
+
     const outputFormats = [
         { label: 'CSV', value: 'csv' },
         { label: 'XML', value: 'xml' },
@@ -89,20 +100,79 @@ export default function SyntheticDataChat() {
                             onChange={(e) => setPrompt(e.target.value)}
                             placeholder="What do you want to explore?"
                             className="w-full p-4 bg-gray-800 rounded-lg text-white 
-                focus:outline-none focus:ring-2 focus:ring-blue-500
-                placeholder-gray-500"
+                                    focus:outline-none focus:ring-2 focus:ring-blue-500
+                                    placeholder-gray-500"
                         />
-                        <button
-                            type="submit"
-                            disabled={isLoading}
-                            className="absolute right-2 top-1/2 -translate-y-1/2 
-                bg-blue-600 text-white p-2 rounded-full 
-                hover:bg-blue-700 disabled:opacity-50"
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 5l7 7-7 7M5 5l7 7-7 7" />
-                            </svg>
-                        </button>
+
+                        {/* Buttons container */}
+                        <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center space-x-2">
+                            {/* Upload button */}
+                            <button
+                                type="button"
+                                onClick={handleUploadClick}
+                                className="bg-gray-800 text-white p-2 rounded-full 
+                                        hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            >
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    className="h-5 w-5"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 9l5-5m0 0l5 5m-5-5v12"
+                                    />
+                                </svg>
+                            </button>
+
+                            {/* Submit button */}
+                            <button
+                                type="submit"
+                                disabled={isLoading}
+                                className="bg-blue-600 text-white p-2 rounded-full 
+                                        hover:bg-blue-700 disabled:opacity-50
+                                        focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            >
+                                {isLoading ? (
+                                    // Spinner animation when loading
+                                    <svg
+                                        className="animate-spin h-6 w-6 text-white"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <circle
+                                            className="opacity-25"
+                                            cx="12"
+                                            cy="12"
+                                            r="10"
+                                            stroke="currentColor"
+                                            strokeWidth="4"
+                                        ></circle>
+                                        <path
+                                            className="opacity-100"
+                                            fill="white"
+                                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                                        ></path>
+                                    </svg>
+                                ) : (
+                                    // Default submit icon when not loading
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        className="h-6 w-6"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                    >
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+                                    </svg>
+                                )}
+                            </button>
+                        </div>
                     </form>
 
                     {/* Output Format Selector */}
@@ -118,8 +188,8 @@ export default function SyntheticDataChat() {
                                     onClick={() => setOutputFormat(format.value as any)}
                                     className={`px-4 py-2 rounded-full text-sm 
                     ${outputFormat === format.value
-                                            ? 'bg-blue-600 text-white'
-                                            : 'bg-gray-800 text-gray-400 hover:bg-gray-700'}`}
+                                            ? 'bg-blue-600/20 text-blue-300'
+                                            : 'bg-gray-800/50 text-gray-400 hover:bg-gray-700/50'}`}
                                 >
                                     {format.label}
                                 </button>
