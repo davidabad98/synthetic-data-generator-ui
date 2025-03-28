@@ -3,9 +3,5 @@
 import SyntheticDataChat from '@/components/SyntheticDataChat';
 
 export default function Home() {
-  return (
-    <main>
-      <SyntheticDataChat />
-    </main>
-  );
+  return <SyntheticDataChat />;
 }
