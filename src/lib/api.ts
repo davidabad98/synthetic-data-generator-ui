@@ -33,4 +33,19 @@ api.interceptors.response.use(
     }
 );
 
+export const generateSyntheticData = async (prompt: string) => {
+    try {
+        const response = await api.post('/api/generate', {
+            output_format: 'csv',
+            prompt: prompt,
+            volume: 10,
+            parameters: { country: 'US' }
+        });
+        return response.data;
+    } catch (error) {
+        console.error('Error generating synthetic data:', error);
+        throw error;
+    }
+};
+
 export default api;
