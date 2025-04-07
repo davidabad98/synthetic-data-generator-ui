@@ -36,20 +36,15 @@ api.interceptors.response.use(
 export const generateSyntheticData = async (
     prompt: string,
     outputFormat: string = 'csv',
-    fileReference?: string
+    selectedModel: string = 'claude-2.1'
 ) => {
     try {
         const payload: any = {
             output_format: outputFormat,
             prompt: prompt,
             volume: 10,
-            parameters: { country: 'US' }
+            parameters: { selectedModel: selectedModel }
         };
-
-        // Add file reference if provided
-        if (fileReference) {
-            payload.file_reference = fileReference;
-        }
 
         const response = await api.post('/api/generate', payload);
         return response.data;
@@ -59,12 +54,12 @@ export const generateSyntheticData = async (
     }
 };
 
-export const uploadFile = async (file: File) => {
+export const uploadFile = async (file: File, selectedModel: string = 'claude-2.1') => {
     try {
         // Create FormData object
         const formData = new FormData();
         formData.append('file', file);
-
+        formData.append('selectedModel', selectedModel);
         // Create a custom config for the multipart/form-data
         const config = {
             headers: {

@@ -164,9 +164,10 @@ export default function SyntheticDataChat() {
             <div className={`flex flex-col flex-grow justify-center items-center transition-all duration-500 ${hasStartedChat ? 'pt-10' : 'justify-center'}`}>
                 {!hasStartedChat && (
                     <>
-                        <h1 className="text-4xl font-bold mb-8">Synthetic Data Engine</h1>
+                        <h1 className="text-4xl font-bold mb-12">Synthetic Data Engine</h1>
                         {/* Add format buttons to initial view */}
-                        <div className="flex justify-center space-x-2 mb-8">
+                        {/* NO LONGER USED */}
+                        {/* <div className="flex justify-center space-x-2 mb-8">
                             {outputFormats.map((format) => (
                                 <button
                                     key={format.value}
@@ -179,7 +180,7 @@ export default function SyntheticDataChat() {
                                     {format.label}
                                 </button>
                             ))}
-                        </div>
+                        </div> */}
                     </>
                 )}
 
@@ -367,38 +368,11 @@ export default function SyntheticDataChat() {
                         </form>
 
                         {/* LLM Selector - Now with the same background as the input */}
-                        <div className="relative llm-selector-container bg-gray-800 rounded-b-lg border-t border-gray-600">
+                        <div className="relative llm-selector-container bg-gray-800 rounded-b-lg">
                             {/* Command Bar with Format selector and LLM selector */}
                             <div className="flex items-center px-4 py-2 justify-between">
-                                {/* Format Selector with slide-out animation */}
-                                <div className="relative group">
-                                    {/* Format Selector Button (showing selected format) */}
-                                    <button
-                                        type="button"
-                                        className="flex items-center space-x-2 bg-gray-700 hover:bg-gray-600 py-1 px-3 rounded-full text-sm transition-colors"
-                                    >
-                                        <span className="text-white">{outputFormat}</span>
-                                    </button>
-
-                                    {/* Sliding format options that appear on hover */}
-                                    <div className="absolute left-0 top-0 flex overflow-hidden w-0 group-hover:w-64 transition-all duration-300 ease-in-out">
-                                        <div className="flex space-x-1 bg-gray-700 pl-1 pr-2 py-1 rounded-full">
-                                            {outputFormats.map((format) => (
-                                                <button
-                                                    key={format.value}
-                                                    onClick={() => setOutputFormat(format.label as any)}
-                                                    className={`px-2 py-0.5 rounded-full text-sm whitespace-nowrap transition-colors
-                                ${outputFormat === format.label ? 'bg-blue-700/70 text-blue-300' : 'text-gray-300 hover:bg-gray-600'}`}
-                                                >
-                                                    {format.label}
-                                                </button>
-                                            ))}
-                                        </div>
-                                    </div>
-                                </div>
-
+                                {/* LLM Selector badge/bubble button - MOVED TO LEFT */}
                                 <div className="flex items-center space-x-4">
-                                    {/* LLM Selector badge/bubble button */}
                                     <button
                                         type="button"
                                         onClick={toggleLLMSelector}
@@ -421,6 +395,33 @@ export default function SyntheticDataChat() {
                                     {/* Optional: Add model description next to the button */}
                                     <span className="text-gray-400 text-xs hidden sm:inline-block">{selectedLLM.description}</span>
                                 </div>
+
+                                {/* Format Selector with slide-out animation - MOVED TO RIGHT */}
+                                <div className="relative group">
+                                    {/* Format Selector Button (showing selected format) */}
+                                    <button
+                                        type="button"
+                                        className="flex items-center space-x-2 bg-gray-700 hover:bg-gray-600 py-1 px-3 rounded-full text-sm transition-colors"
+                                    >
+                                        <span className="text-white">{outputFormat}</span>
+                                    </button>
+
+                                    {/* Sliding format options that appear on hover - MODIFIED FOR RIGHT SIDE */}
+                                    <div className="absolute right-0 top-0 flex overflow-hidden w-0 group-hover:w-64 transition-all duration-300 ease-in-out">
+                                        <div className="flex space-x-1 bg-gray-700 pl-2 pr-2 py-1 rounded-full">
+                                            {outputFormats.map((format) => (
+                                                <button
+                                                    key={format.value}
+                                                    onClick={() => setOutputFormat(format.label as any)}
+                                                    className={`px-3 py-0.5 rounded-full text-sm whitespace-nowrap transition-colors
+                        ${outputFormat === format.label ? 'bg-blue-700/70 text-blue-300' : 'text-gray-300 hover:bg-gray-600'}`}
+                                                >
+                                                    {format.label}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
 
                             {/* Square Card Menu for LLM options */}
@@ -432,7 +433,7 @@ export default function SyntheticDataChat() {
                                                 key={llm.id}
                                                 onClick={() => handleSelectLLM(llm)}
                                                 className={`flex items-center w-full px-3 py-3 text-left rounded-md transition-colors mb-1 last:mb-0
-                            ${selectedLLM.id === llm.id ? 'bg-gray-700 ring-1 ring-blue-500' : 'hover:bg-gray-700'}`}
+                    ${selectedLLM.id === llm.id ? 'bg-gray-700 ring-1 ring-blue-500' : 'hover:bg-gray-700'}`}
                                             >
                                                 <div className="text-blue-300 mr-3">
                                                     {llm.icon}

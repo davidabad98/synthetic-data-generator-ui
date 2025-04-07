@@ -26,8 +26,8 @@ export interface SyntheticDataState {
     error: string | null;
 
     // Actions
-    sendPrompt: (prompt: string, outputFormat: string) => Promise<void>;
-    sendFileWithPrompt: (prompt: string, file: File, outputFormat: string) => Promise<void>;
+    sendPrompt: (prompt: string, outputFormat: string, selectedModel: string) => Promise<void>;
+    sendFileWithPrompt: (prompt: string, file: File, outputFormat: string, selectedModel: string) => Promise<void>;
     clearMessages: () => void;
 }
 
@@ -57,7 +57,7 @@ export const useSyntheticDataStore = create<SyntheticDataState>((set, get) => ({
     isLoading: false,
     error: null,
 
-    sendPrompt: async (prompt: string, outputFormat: string = 'csv') => {
+    sendPrompt: async (prompt: string, outputFormat: string = 'csv', selectedModel: string = 'claude-2.1') => {
         // Add user message
         const userMessage: Message = {
             id: `user-${Date.now()}`,
@@ -74,13 +74,18 @@ export const useSyntheticDataStore = create<SyntheticDataState>((set, get) => ({
 
         try {
             // API call to synthetic data generator
-            const response = await generateSyntheticData(prompt, outputFormat);
+            const response = await generateSyntheticData(prompt, outputFormat, selectedModel);
 
             const resultMessage: Message = {
                 id: `result-${Date.now()}`,
-                content: typeof response.data === 'string'
-                    ? response.data
-                    : JSON.stringify(response.data, null, 2),
+                content: (
+                    typeof response.data === 'object' &&
+                    response.data !== null &&
+                    'data' in response.data &&
+                    typeof response.data.data === 'string'
+                ) ? response.data.data :  // Extract nested data property
+                    typeof response.data === 'string' ? response.data :  // Fallback to string
+                        JSON.stringify(response.data, null, 2),  // Final fallback
                 type: 'result',
                 timestamp: new Date()
             };
@@ -106,7 +111,7 @@ export const useSyntheticDataStore = create<SyntheticDataState>((set, get) => ({
         }
     },
 
-    sendFileWithPrompt: async (prompt: string, file: File, outputFormat: string = 'csv') => {
+    sendFileWithPrompt: async (prompt: string, file: File, outputFormat: string = 'csv', selectedModel: string = 'claude-2.1') => {
         // Add user message including file information
         const userMessage: Message = {
             id: `user-${Date.now()}`,
@@ -125,7 +130,7 @@ export const useSyntheticDataStore = create<SyntheticDataState>((set, get) => ({
 
         try {
             // First upload the file and get its URL or reference
-            const response = await uploadFile(file);
+            const response = await uploadFile(file, selectedModel);
 
             // Code implementation for sending a prompt after the file is saved
             // Then send the prompt with the file reference
@@ -137,9 +142,14 @@ export const useSyntheticDataStore = create<SyntheticDataState>((set, get) => ({
 
             const resultMessage: Message = {
                 id: `result-${Date.now()}`,
-                content: typeof response.data === 'string'
-                    ? response.data
-                    : JSON.stringify(response.data, null, 2),
+                content: (
+                    typeof response.data === 'object' &&
+                    response.data !== null &&
+                    'data' in response.data &&
+                    typeof response.data.data === 'string'
+                ) ? response.data.data :  // Extract nested data property
+                    typeof response.data === 'string' ? response.data :  // Fallback to string
+                        JSON.stringify(response.data, null, 2),  // Final fallback
                 type: 'result',
                 timestamp: new Date()
             };
