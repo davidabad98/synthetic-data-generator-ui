@@ -1,4 +1,4 @@
-import { generateSyntheticData } from '@/lib/api';
+import { generateSyntheticData, uploadFile } from '@/lib/api';
 import axios, { AxiosError } from 'axios';
 import { create } from 'zustand';
 
@@ -26,7 +26,8 @@ export interface SyntheticDataState {
     error: string | null;
 
     // Actions
-    sendPrompt: (prompt: string) => Promise<void>;
+    sendPrompt: (prompt: string, outputFormat: string) => Promise<void>;
+    sendFileWithPrompt: (prompt: string, file: File, outputFormat: string) => Promise<void>;
     clearMessages: () => void;
 }
 
@@ -56,7 +57,7 @@ export const useSyntheticDataStore = create<SyntheticDataState>((set, get) => ({
     isLoading: false,
     error: null,
 
-    sendPrompt: async (prompt: string) => {
+    sendPrompt: async (prompt: string, outputFormat: string = 'csv') => {
         // Add user message
         const userMessage: Message = {
             id: `user-${Date.now()}`,
@@ -73,11 +74,72 @@ export const useSyntheticDataStore = create<SyntheticDataState>((set, get) => ({
 
         try {
             // API call to synthetic data generator
-            const response = await generateSyntheticData(prompt);
+            const response = await generateSyntheticData(prompt, outputFormat);
 
             const resultMessage: Message = {
                 id: `result-${Date.now()}`,
-                content: JSON.stringify(response.data, null, 2),
+                content: typeof response.data === 'string'
+                    ? response.data
+                    : JSON.stringify(response.data, null, 2),
+                type: 'result',
+                timestamp: new Date()
+            };
+
+            set(state => ({
+                messages: [...state.messages, resultMessage],
+                isLoading: false
+            }));
+        } catch (error: unknown) {
+            const errorMessage = getErrorMessage(error);
+            const systemMessage: Message = {
+                id: `error-${Date.now()}`,
+                content: errorMessage,
+                type: 'system',
+                timestamp: new Date()
+            };
+
+            set(state => ({
+                messages: [...state.messages, systemMessage],
+                isLoading: false,
+                error: errorMessage
+            }));
+        }
+    },
+
+    sendFileWithPrompt: async (prompt: string, file: File, outputFormat: string = 'csv') => {
+        // Add user message including file information
+        const userMessage: Message = {
+            id: `user-${Date.now()}`,
+            content: prompt
+                ? `${prompt} [File: ${file.name}]`
+                : `File uploaded: ${file.name}`,
+            type: 'user',
+            timestamp: new Date()
+        };
+
+        set(state => ({
+            messages: [...state.messages, userMessage],
+            isLoading: true,
+            error: null
+        }));
+
+        try {
+            // First upload the file and get its URL or reference
+            const response = await uploadFile(file);
+
+            // Code implementation for sending a prompt after the file is saved
+            // Then send the prompt with the file reference
+            // const response = await generateSyntheticData(
+            //     prompt,
+            //     outputFormat,
+            //     fileUploadResponse.fileUrl || fileUploadResponse.fileKey
+            // );
+
+            const resultMessage: Message = {
+                id: `result-${Date.now()}`,
+                content: typeof response.data === 'string'
+                    ? response.data
+                    : JSON.stringify(response.data, null, 2),
                 type: 'result',
                 timestamp: new Date()
             };
