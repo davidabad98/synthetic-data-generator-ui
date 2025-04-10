@@ -1,6 +1,6 @@
 'use client';
 
-import { useSyntheticDataStore } from '@/store/syntheticDataStore';
+import { Message, useSyntheticDataStore } from '@/store/syntheticDataStore';
 import { AnimatePresence, motion } from 'framer-motion';
 import React, { useEffect, useRef, useState } from 'react';
 
@@ -159,6 +159,31 @@ export default function SyntheticDataChat() {
         { label: 'TEXT', value: 'TEXT' }
     ];
 
+    const renderMessageContent = (message: Message) => {
+        // If it's a result message with a URL, render it nicely
+        if (message.type === 'result' && message.url) {
+            return (
+                <div className="space-y-2">
+                    <p>{message.content}</p>
+                    <a
+                        href={message.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center px-3 py-1.5 bg-blue-600/70 text-white rounded-md hover:bg-blue-700/70 transition"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                        Download File
+                    </a>
+                </div>
+            );
+        }
+
+        // For other message types, just render the content as is
+        return message.content;
+    };
+
     return (
         <div className="flex flex-col min-h-screen bg-black text-white">
             <div className={`flex flex-col flex-grow justify-center items-center transition-all duration-500 ${hasStartedChat ? 'pt-10' : 'justify-center'}`}>
@@ -199,7 +224,8 @@ export default function SyntheticDataChat() {
                                             message.type === 'result' ? 'bg-gray-800' :
                                                 'bg-red-600/20 text-red-300'}`}
                                 >
-                                    {message.content}
+                                    {/* Render message content with URL handling */}
+                                    {renderMessageContent(message)}
                                 </motion.div>
                             ))}
                         </AnimatePresence>

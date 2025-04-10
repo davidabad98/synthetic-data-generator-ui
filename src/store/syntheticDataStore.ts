@@ -8,6 +8,7 @@ export interface Message {
     content: string;
     type: 'user' | 'system' | 'result';
     timestamp: Date;
+    url?: string | null;  // Optional URL property
 }
 
 // Type for API error response
@@ -52,6 +53,20 @@ const getErrorMessage = (error: unknown): string => {
     return 'An unexpected error occurred';
 };
 
+// Type guard to ensure we have the expected structure
+function isValidResponse(data: any): data is { message: string; data: { message: string; url: string } } {
+    return (
+        typeof data === 'object' &&
+        data !== null &&
+        'data' in data &&
+        typeof data.data === 'object' &&
+        data.data !== null &&
+        'message' in data.data &&
+        'url' in data.data &&
+        typeof data.data.url === 'string'
+    );
+}
+
 export const useSyntheticDataStore = create<SyntheticDataState>((set, get) => ({
     messages: [],
     isLoading: false,
@@ -76,18 +91,32 @@ export const useSyntheticDataStore = create<SyntheticDataState>((set, get) => ({
             // API call to synthetic data generator
             const response = await generateSyntheticData(prompt, outputFormat, selectedModel);
 
+            let messageContent = '';
+            let downloadUrl: string | undefined;
+
+            // Process the response based on its structure
+            if (isValidResponse(response)) {
+                // We have the expected structure
+                messageContent = response.data.message;
+                downloadUrl = response.data.url;
+            } else if (typeof response.data?.data === 'object' && response.data?.data?.message) {
+                // Partial structure - has message but maybe not URL
+                messageContent = response.data.data.message;
+                downloadUrl = response.data.data.url;
+            } else {
+                // Fallback for unexpected formats
+                messageContent = typeof response.data === 'string'
+                    ? response.data
+                    : JSON.stringify(response.data, null, 2);
+                downloadUrl = undefined;
+            }
+
             const resultMessage: Message = {
                 id: `result-${Date.now()}`,
-                content: (
-                    typeof response.data === 'object' &&
-                    response.data !== null &&
-                    'data' in response.data &&
-                    typeof response.data.data === 'string'
-                ) ? response.data.data :  // Extract nested data property
-                    typeof response.data === 'string' ? response.data :  // Fallback to string
-                        JSON.stringify(response.data, null, 2),  // Final fallback
+                content: messageContent,
                 type: 'result',
-                timestamp: new Date()
+                timestamp: new Date(),
+                url: downloadUrl
             };
 
             set(state => ({
